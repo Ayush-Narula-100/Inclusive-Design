@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inclusive Redesign of Banking Mobile Apps — Ayush Narula</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            black: '#18181B',
+                            primary: '#FACC15',
+                            primaryDark: '#EAB308',
+                            gray: '#F4F4F5'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif']
+                    },
+                    boxShadow: {
+                        'card': '0 0 0 1px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.05)',
+                        'float': '0 20px 40px -10px rgba(0,0,0,0.1)',
+                        'glow': '0 0 20px rgba(250,204,21,0.3)',
+                        'hard': '3px 3px 0px 0px rgba(0,0,0,1)',
+                        'hard-lg': '4px 4px 0px 0px rgba(0,0,0,1)',
+                        'hard-white': '4px 4px 0px 0px rgba(255,255,255,0.2)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes drawLine {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        @keyframes slideDown {
+            from { opacity: 0; max-height: 0; }
+            to { opacity: 1; max-height: 500px; }
+        }
+        
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .animate-on-scroll.delay-1 { transition-delay: 0.1s; }
+        .animate-on-scroll.delay-2 { transition-delay: 0.2s; }
+        .animate-on-scroll.delay-3 { transition-delay: 0.3s; }
+        .animate-on-scroll.delay-4 { transition-delay: 0.4s; }
+        .animate-on-scroll.delay-5 { transition-delay: 0.5s; }
+        .animate-on-scroll.delay-6 { transition-delay: 0.6s; }
+        
+        .float-anim { animation: float 6s ease-in-out infinite; }
+        .float-anim-delayed { animation: float 6s ease-in-out infinite; animation-delay: 2s; }
+        
+        .grid-bg {
+            background-image: 
+                linear-gradient(to right, rgba(24,24,27,0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(24,24,27,0.05) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+        
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: #FACC15;
+            z-index: 9999;
+            transition: width 0.1s linear;
+        }
+        
+        .slide-nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(24,24,27,0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .slide-nav-dot.active {
+            background: #FACC15;
+            transform: scale(1.4);
+        }
+        .slide-nav-dot:hover {
+            background: rgba(24,24,27,0.5);
+        }
+        
+        .concept-tab {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .concept-tab.active {
+            background: #000;
+            color: #fff;
+            box-shadow: 3px 3px 0px 0px rgba(0,0,0,1);
+        }
+        
+        .concept-panel {
+            display: none;
+            animation: fadeInUp 0.4s ease-out;
+        }
+        .concept-panel.active {
+            display: block;
+        }
+        
+        .phone-mockup {
+            width: 220px;
+            height: 440px;
+            border: 3px solid #000;
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            background: #fff;
+        }
+        .phone-mockup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 24px;
+            background: #000;
+            border-radius: 0 0 16px 16px;
+            z-index: 10;
+        }
+        
+        .flow-step {
+            position: relative;
+        }
+        .flow-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -32px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 2px;
+            background: #000;
+        }
+        
+        .barrier-card {
+            transition: all 0.3s ease;
+        }
+        .barrier-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+        }
+        
+        .milestone-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .stat-number {
+            font-variant-numeric: tabular-nums;
+        }
+        
+        @media (max-width: 768px) {
+            .phone-mockup {
+                width: 180px;
+                height: 360px;
+            }
+            .flow-step:not(:last-child)::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#FAFAFA] text-zinc-800 overflow-x-hidden">
+
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Side Navigation Dots -->
+    <nav class="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-2.5 hidden lg:flex" id="sideNav">
+    </nav>
+
+    <!-- Top Navigation -->
+    <header class="fixed top-0 left-0 right-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur-md" id="topNav">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-black rounded-md flex items-center justify-center">
+                    <span class="iconify text-brand-primary text-sm" data-icon="lucide:smartphone"></span>
+                </div>
+                <span class="font-semibold text-sm tracking-tight hidden sm:block">Inclusive Banking Redesign</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-xs font-medium text-zinc-400 hidden md:block">Ayush Narula • 500119444</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-brand-primary animate-pulse"></span>
+                    <span class="text-xs font-semibold" id="currentMilestone">Milestone 1</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== SLIDE 1: HERO ==================== -->
+    <section class="min-h-screen flex items-center justify-center relative grid-bg pt-16" data-section="0" data-milestone="Milestone 1">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#FAFAFA] pointer-events-none"></div>
+        <div class="absolute top-32 left-10 w-72 h-72 bg-brand-primary/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-brand-primary/5 rounded-full blur-3xl"></div>
+        
+        <div class="max-w-5xl mx-auto px-6 text-center relative z-10">
+            <div class="animate-on-scroll">
+                <span class="milestone-badge bg-zinc-100 text-zinc-600 border border-zinc-200 mb-8 inline-flex">
+                    <span class="iconify" data-icon="lucide:flag"></span>
+                    Milestone 1 — Problem Identification & User Research
+                </span>
+            </div>
+            
+            <h1 class="font-serif text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.05] mb-6 animate-on-scroll delay-1">
+                Inclusive Redesign of<br>
+                <span class="relative inline-block">
+                    Banking Mobile Apps
+                    <svg class="absolute -bottom-2 left-0 w-full" viewBox="0 0 300 12" fill="none">
+                        <path d="M2 8C50 2 150 2 298 8" stroke="#FACC15" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+                </span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-zinc-500 font-light max-w-2xl mx-auto mb-10 leading-relaxed animate-on-scroll delay-2">
+                For Elderly Users with Low Digital Literacy
+            </p>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-on-scroll delay-3">
+                <a href="#slide2" class="bg-black text-white px-8 py-4 rounded-lg font-semibold text-sm tracking-wide hover:bg-zinc-800 transition-all shadow-hard flex items-center gap-2">
+                    Explore the Research
+                    <span class="iconify" data-icon="lucide:arrow-down"></span>
+                </a>
+                <a href="#slide20" class="border-2 border-black px-8 py-4 rounded-lg font-semibold text-sm tracking-wide hover:bg-black hover:text-white transition-all flex items-center gap-2">
+                    Jump to Final Proposal
+                    <span class="iconify" data-icon="lucide:arrow-right"></span>
+                </a>
+            </div>
+            
+            <div class="flex items-center justify-center gap-8 text-sm text-zinc-400 animate-on-scroll delay-4">
+                <div class="flex items-center gap-2">
+                    <span class="iconify" data-icon="lucide:user"></span>
+                    <span>Ayush Narula</span>
+                </div>
+                <div class="w-px h-4 bg-zinc-300"></div>
+                <div class="flex items-center gap-2">
+                    <span class="iconify" data-icon="lucide:hash"></span>
+                    <span>500119444</span>
+                </div>
+                <div class="w-px h-4 bg-zinc-300 hidden sm:block"></div>
+                <div class="flex items-center gap-2 hidden sm:flex">
+                    <span class="iconify" data-icon="lucide:graduation-cap"></span>
+                    <span>B.Tech CSE</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 2: THE RISE OF DIGITAL BANKING ==================== -->
+    <section class="py-24 md:py-32 relative" data-section="1" data-milestone="Milestone 1" id="slide2">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <span class="milestone-badge bg-brand-primary/20 text-yellow-800 mb-6 animate-on-scroll">
+                        <span class="iconify" data-icon="lucide:trending-up"></span>
+                        Context
+                    </span>
+                    <h2 class="font-serif text-3xl md:text-5xl font-semibold tracking-tight mb-6 animate-on-scroll delay-1">
+                        The Rise of<br>Digital Banking
+                    </h2>
+                    <p class="text-zinc-500 text-lg leading-relaxed mb-8 animate-on-scroll delay-2">
+                        Mobile banking — UPI, net banking, and payment apps — has fundamentally transformed how people manage money in India. With over <strong class="text-zinc-800 font-semibold">10 billion UPI transactions monthly</strong>, these tools are no longer optional; they are essential infrastructure.
+                    </p>
+                    <p class="text-zinc-500 leading-relaxed animate-on-scroll delay-3">
+                        Yet accessibility in financial services is rarely treated as a design priority, leaving millions without meaningful access.
+                    </p>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-white border-2 border-black rounded-xl p-6 shadow-hard hover:-translate-y-1 transition-all animate-on-scroll delay-2">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-brand-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                                <span class="iconify text-black text-xl" data-icon="lucide:clock"></span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg mb-1">Convenience</h3>
+                                <p class="text-zinc-500 text-sm">24/7 access to payments, transfers, and balances</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border-2 border-black rounded-xl p-6 shadow-hard hover:-translate-y-1 transition-all animate-on-scroll delay-3">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-brand-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                                <span class="iconify text-black text-xl" data-icon="lucide:globe"></span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg mb-1">Reach</h3>
+                                <p class="text-zinc-500 text-sm">Banking access in rural and semi-urban areas</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border-2 border-black rounded-xl p-6 shadow-hard hover:-translate-y-1 transition-all animate-on-scroll delay-4">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-brand-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                                <span class="iconify text-black text-xl" data-icon="lucide:zap"></span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg mb-1">Speed</h3>
+                                <p class="text-zinc-500 text-sm">Instant transfers replacing slow, in-person queues</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Bar -->
+            <div class="mt-16 bg-black rounded-2xl p-8 grid grid-cols-2 md:grid-cols-4 gap-8 animate-on-scroll delay-5">
+                <div class="text-center">
+                    <div class="text-brand-primary text-3xl md:text-4xl font-bold stat-number">10B+</div>
+                    <div class="text-zinc-400 text-xs mt-1 uppercase tracking-wider">Monthly UPI Txns</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-brand-primary text-3xl md:text-4xl font-bold stat-number">300M+</div>
+                    <div class="text-zinc-400 text-xs mt-1 uppercase tracking-wider">UPI Users</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-brand-primary text-3xl md:text-4xl font-bold stat-number">140M+</div>
+                    <div class="text-zinc-400 text-xs mt-1 uppercase tracking-wider">Elderly Population</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-brand-primary text-3xl md:text-4xl font-bold stat-number">67%</div>
+                    <div class="text-zinc-400 text-xs mt-1 uppercase tracking-wider">Digital Exclusion</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 3: PROBLEM STATEMENT ==================== -->
+    <section class="py-24 md:py-32 bg-zinc-900 text-white relative overflow-hidden" data-section="2" data-milestone="Milestone 1">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-72 h-72 bg-brand-primary/5 rounded-full blur-3xl"></div>
+        <div class="max-w-4xl mx-auto px-6 relative z-10">
+            <span class="milestone-badge bg-white/10 text-brand-primary border border-white/20 mb-8 animate-on-scroll">
+                <span class="iconify" data-icon="lucide:alert-triangle"></span>
+                Problem Statement
+            </span>
+            
+            <div class="relative">
+                <span class="absolute -left-6 -top-4 text-brand-primary text-8xl font-serif opacity-20 hidden md:block">"</span>
+                <p class="text-xl md:text-2xl font-light leading-relaxed text-zinc-300 animate-on-scroll delay-1">
+                    Elderly users aged 60 and above, particularly those with low digital literacy, struggle significantly to use modern banking apps. Complex multi-step interfaces, small fonts, confusing icons, and the complete absence of guided assistance create an environment that is <strong class="text-white font-semibold">hostile to this population</strong> — resulting in financial dependency on others, heightened vulnerability to fraud, and a deep sense of anxiety and exclusion from essential financial services.
+                </p>
+            </div>
+            
+            <div class="mt-12 border-l-4 border-brand-primary pl-6 animate-on-scroll delay-2">
+                <p class="text-lg font-serif italic text-brand-primary">
+                    This is a problem of design failure — not a failure of the user. The system was never built with them in mind.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 4: PERSONAL LENS ==================== -->
+    <section class="py-24 md:py-32 relative" data-section="3" data-milestone="Milestone 1">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="milestone-badge bg-zinc-100 text-zinc-600 border border-zinc-200 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:heart"></span>
+                    A Personal Lens
+                </span>
+                <h2 class="font-serif text-3xl md:text-4xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Why This Problem Matters
+                </h2>
+                <p class="text-zinc-500 mt-4 max-w-xl mx-auto animate-on-scroll delay-2">This isn't an abstract research question. It comes from real, observed frustration.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Step 1 -->
+                <div class="relative animate-on-scroll delay-1">
+                    <div class="bg-white border border-zinc-200 rounded-2xl p-8 hover:border-black transition-all h-full">
+                        <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-6 text-lg font-bold">1</div>
+                        <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                            <span class="iconify text-zinc-400" data-icon="lucide:pause-circle"></span>
+                            The Hesitation
+                        </h3>
+                        <p class="text-zinc-500 text-sm leading-relaxed">
+                            A parent or grandparent picks up the phone to transfer money — and pauses. They're afraid of pressing the wrong button, sending to the wrong person, or losing money entirely.
+                        </p>
+                    </div>
+                    <div class="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
+                        <span class="iconify text-zinc-300 text-xl" data-icon="lucide:chevron-right"></span>
+                    </div>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="relative animate-on-scroll delay-2">
+                    <div class="bg-white border border-zinc-200 rounded-2xl p-8 hover:border-black transition-all h-full">
+                        <div class="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center mb-6 text-lg font-bold">2</div>
+                        <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                            <span class="iconify text-zinc-400" data-icon="lucide:hand-helping"></span>
+                            The Ask for Help
+                        </h3>
+                        <p class="text-zinc-500 text-sm leading-relaxed">
+                            Instead of completing the task independently, they wait for a family member to "do it for them." Every time. This erodes confidence and creates dependency.
+                        </p>
+                    </div>
+                    <div class="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
+                        <span class="iconify text-zinc-300 text-xl" data-icon="lucide:chevron-right"></span>
+                    </div>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="animate-on-scroll delay-3">
+                    <div class="bg-black text-white border-2 border-black rounded-2xl p-8 shadow-hard-lg h-full">
+                        <div class="w-10 h-10 rounded-full bg-brand-primary text-black flex items-center justify-center mb-6 text-lg font-bold">3</div>
+                        <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                            <span class="iconify text-brand-primary" data-icon="lucide:target"></span>
+                            The Root Cause
+                        </h3>
+                        <p class="text-zinc-400 text-sm leading-relaxed">
+                            The app was designed for a younger, tech-savvy audience. This group was never considered — and it shows in every interaction.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 5: PRIMARY USER GROUP ==================== -->
+    <section class="py-24 md:py-32 bg-zinc-50 grid-bg" data-section="4" data-milestone="Milestone 1">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <span class="milestone-badge bg-blue-50 text-blue-700 border border-blue-200 mb-6 animate-on-scroll">
+                        <span class="iconify" data-icon="lucide:users"></span>
+                        Focus Population
+                    </span>
+                    <h2 class="font-serif text-3xl md:text-5xl font-semibold tracking-tight mb-4 animate-on-scroll delay-1">
+                        Primary User Group
+                    </h2>
+                    <p class="text-xl font-medium text-zinc-700 mb-4 animate-on-scroll delay-2">Elderly Users (60+) with Low Digital Literacy</p>
+                    <p class="text-zinc-500 leading-relaxed animate-on-scroll delay-3">
+                        This group represents a large and rapidly growing segment of banking customers — yet they are consistently underserved by current app design.
+                    </p>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-white rounded-2xl p-6 border border-zinc-200 barrier-card animate-on-scroll delay-2">
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                <span class="iconify text-purple-600 text-lg" data-icon="lucide:eye"></span>
+                            </div>
+                            <h3 class="font-bold">Visual Decline</h3>
+                        </div>
+                        <p class="text-zinc-500 text-sm pl-14">Reduced ability to read small text or distinguish low-contrast colours</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-2xl p-6 border border-zinc-200 barrier-card animate-on-scroll delay-3">
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                                <span class="iconify text-amber-600 text-lg" data-icon="lucide:brain"></span>
+                            </div>
+                            <h3 class="font-bold">Cognitive Load</h3>
+                        </div>
+                        <p class="text-zinc-500 text-sm pl-14">Difficulty retaining multi-step flows or unfamiliar terminology</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-2xl p-6 border border-zinc-200 barrier-card animate-on-scroll delay-4">
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                                <span class="iconify text-red-600 text-lg" data-icon="lucide:alert-circle"></span>
+                            </div>
+                            <h3 class="font-bold">Technology Anxiety</h3>
+                        </div>
+                        <p class="text-zinc-500 text-sm pl-14">Fear of making irreversible errors; avoidance of unfamiliar gestures</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 6: SECONDARY USER GROUPS ==================== -->
+    <section class="py-24 md:py-32" data-section="5" data-milestone="Milestone 1">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="milestone-badge bg-zinc-100 text-zinc-600 border border-zinc-200 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:share-2"></span>
+                    Ripple Benefits
+                </span>
+                <h2 class="font-serif text-3xl md:text-4xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Secondary User Groups
+                </h2>
+                <p class="text-zinc-500 mt-4 max-w-2xl mx-auto animate-on-scroll delay-2">Designing for elderly users creates ripple benefits — the same barriers affect a much wider population.</p>
+            </div>
+            
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white border border-zinc-200 rounded-2xl p-6 text-center hover:border-black transition-all animate-on-scroll delay-1">
+                    <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <span class="iconify text-green-600 text-2xl" data-icon="lucide:trees"></span>
+                    </div>
+                    <h3 class="font-bold text-sm mb-2">Rural Users</h3>
+                    <p class="text-zinc-400 text-xs leading-relaxed">Limited connectivity, shared devices, low familiarity with digital banking</p>
+                </div>
+                
+                <div class="bg-white border border-zinc-200 rounded-2xl p-6 text-center hover:border-black transition-all animate-on-scroll delay-2">
+                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <span class="iconify text-blue-600 text-2xl" data-icon="lucide:book-open"></span>
+                    </div>
+                    <h3 class="font-bold text-sm mb-2">Semi-Literate Users</h3>
+                    <p class="text-zinc-400 text-xs leading-relaxed">Struggles with text-heavy interfaces and financial jargon</p>
+                </div>
+                
+                <div class="bg-white border border-zinc-200 rounded-2xl p-6 text-center hover:border-black transition-all animate-on-scroll delay-3">
+                    <div class="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <span class="iconify text-purple-600 text-2xl" data-icon="lucide:smartphone"></span>
+                    </div>
+                    <h3 class="font-bold text-sm mb-2">First-Time Users</h3>
+                    <p class="text-zinc-400 text-xs leading-relaxed">No prior mental model for navigating apps</p>
+                </div>
+                
+                <div class="bg-white border border-zinc-200 rounded-2xl p-6 text-center hover:border-black transition-all animate-on-scroll delay-4">
+                    <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <span class="iconify text-orange-600 text-2xl" data-icon="lucide:cloud-lightning"></span>
+                    </div>
+                    <h3 class="font-bold text-sm mb-2">Users Under Stress</h3>
+                    <p class="text-zinc-400 text-xs leading-relaxed">Temporary cognitive impairment during high-stakes transactions</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 7: PAIN POINTS ==================== -->
+    <section class="py-24 md:py-32 bg-zinc-900 text-white relative overflow-hidden" data-section="6" data-milestone="Milestone 1">
+        <div class="absolute inset-0 grid-bg opacity-30"></div>
+        <div class="max-w-5xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-16">
+                <span class="milestone-badge bg-white/10 text-brand-primary border border-white/20 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:bug"></span>
+                    Analysis
+                </span>
+                <h2 class="font-serif text-3xl md:text-4xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Where Apps Fall Short
+                </h2>
+                <p class="text-zinc-400 mt-4 max-w-2xl mx-auto animate-on-scroll delay-2">These aren't minor UX oversights — they are systemic barriers that prevent a significant portion of users from completing basic financial tasks independently.</p>
+            </div>
+            
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-on-scroll delay-1 hover:bg-white/10 transition-all">
+                    <span class="iconify text-red-400 text-xl mb-3" data-icon="lucide:type"></span>
+                    <h4 class="font-semibold text-sm mb-1">Tiny Typography</h4>
+                    <p class="text-zinc-500 text-xs">Font sizes below 14px are unreadable for ageing eyes</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-on-scroll delay-2 hover:bg-white/10 transition-all">
+                    <span class="iconify text-red-400 text-xl mb-3" data-icon="lucide:layers"></span>
+                    <h4 class="font-semibold text-sm mb-1">Information Overload</h4>
+                    <p class="text-zinc-500 text-xs">Too many options on a single screen</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-on-scroll delay-3 hover:bg-white/10 transition-all">
+                    <span class="iconify text-red-400 text-xl mb-3" data-icon="lucide:help-circle"></span>
+                    <h4 class="font-semibold text-sm mb-1">No Onboarding</h4>
+                    <p class="text-zinc-500 text-xs">Users left to figure it out alone</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-on-scroll delay-2 hover:bg-white/10 transition-all">
+                    <span class="iconify text-red-400 text-xl mb-3" data-icon="lucide:mouse-pointer-click"></span>
+                    <h4 class="font-semibold text-sm mb-1">Small Tap Targets</h4>
+                    <p class="text-zinc-500 text-xs">Buttons too small for imprecise motor control</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-on-scroll delay-3 hover:bg-white/10 transition-all">
+                    <span class="iconify text-red-400 text-xl mb-3" data-icon="lucide:file-text"></span>
+                    <h4 class="font-semibold text-sm mb-1">Banking Jargon</h4>
+                    <p class="text-zinc-500 text-xs">"IMPS", "NEFT" mean nothing to many users</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-xl p-5 animate-on-scroll delay-4 hover:bg-white/10 transition-all">
+                    <span class="iconify text-red-400 text-xl mb-3" data-icon="lucide:shield-off"></span>
+                    <h4 class="font-semibold text-sm mb-1">No Error Recovery</h4>
+                    <p class="text-zinc-500 text-xs">Mistakes feel permanent and costly</p>
+                </div>
+            </div>
+            
+            <div class="mt-12 bg-brand-primary/10 border border-brand-primary/30 rounded-xl p-6 text-center animate-on-scroll delay-5">
+                <p class="text-zinc-300 text-sm">
+                    <span class="iconify text-brand-primary inline-block mr-1" data-icon="lucide:info"></span>
+                    Each pain point compounds the others. A user with poor vision who also struggles with jargon and receives no voice guidance faces <strong class="text-white">compounding failure at every step.</strong>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 8: ACCESSIBILITY BARRIERS ==================== -->
+    <section class="py-24 md:py-32" data-section="7" data-milestone="Milestone 1">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="milestone-badge bg-zinc-100 text-zinc-600 border border-zinc-200 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:scan-eye"></span>
+                    Three Dimensions
+                </span>
+                <h2 class="font-serif text-3xl md:text-4xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Accessibility Barriers
+                </h2>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Visual -->
+                <div class="animate-on-scroll delay-1">
+                    <div class="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-2xl p-8 h-full hover:shadow-float transition-all">
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-6">
+                            <span class="iconify text-purple-600 text-2xl" data-icon="lucide:eye-off"></span>
+                        </div>
+                        <h3 class="font-bold text-lg mb-4 text-purple-900">Visual Barriers</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm text-zinc-600">
+                                <span class="w-1.5 h-1.5 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>
+                                Font sizes too small for ageing eyes
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-zinc-600">
+                                <span class="w-1.5 h-1.5 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>
+                                Low contrast between text and background
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-zinc-600">
+                                <span class="w-1.5 h-1.5 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>
+                                Icon-only navigation with no text labels
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Cognitive -->
+                <div class="animate-on-scroll delay-2">
+                    <div class="bg-gradient-to-br from-amber-50 to-white border-2 border-amber-200 rounded-2xl p-8 h-full hover:shadow-float transition-all">
+                        <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mb-6">
+                            <span class="iconify text-amber-600 text-2xl" data-icon="lucide:brain-cog"></span>
+                        </div>
+                        <h3 class="font-bold text-lg mb-4 text-amber-900">Cognitive Barriers</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm text-zinc-600">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 flex-shrink-0"></span>
+                                Multi-step flows with no progress indicators
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-zinc-600">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 flex-shrink-0"></span>
+                                Overloaded screens competing for attention
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-zinc-600">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 flex-shrink-0"></span>
+                                Banking terminology without plain-language alternatives
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Interaction -->
+                <div class="animate-on-scroll delay-3">
+                    <div class="bg-gradient-to-br from-red-50 to-white border-2 border-red-200 rounded-2xl p-8 h-full hover:shadow-float transition-all">
+                        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-6">
+                            <span class="iconify text-red-600 text-2xl" data-icon="lucide:hand"></span>
+                        </div>
+                        <h3 class="font-bold text-lg mb-4 text-red-900">Interaction Barriers</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 text-sm text-zinc-600">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>
+                                Tap targets far too small for imprecise motor control
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-zinc-600">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>
+                                Complex gesture-based navigation (swipe, pinch, long-press)
+                            </li>
+                            <li class="flex items-start gap-3 text-sm text-zinc-600">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>
+                                No haptic or audio feedback on actions
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 9: INITIAL INSIGHTS ==================== -->
+    <section class="py-24 md:py-32 bg-brand-gray" data-section="8" data-milestone="Milestone 1">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="milestone-badge bg-zinc-100 text-zinc-600 border border-zinc-200 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:lightbulb"></span>
+                    What We've Learned
+                </span>
+                <h2 class="font-serif text-3xl md:text-4xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Initial Insights
+                </h2>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 mb-16">
+                <div class="bg-white rounded-2xl p-8 border border-zinc-200 text-center animate-on-scroll delay-1 hover:shadow-float transition-all">
+                    <div class="w-16 h-16 bg-brand-primary rounded-2xl flex items-center justify-center mx-auto mb-6 float-anim">
+                        <span class="iconify text-black text-2xl" data-icon="lucide:minimize-2"></span>
+                    </div>
+                    <h3 class="font-bold mb-2">Simplicity Over Features</h3>
+                    <p class="text-zinc-500 text-sm">Users consistently prefer fewer options, clearly presented, over feature-rich screens</p>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-8 border border-zinc-200 text-center animate-on-scroll delay-2 hover:shadow-float transition-all">
+                    <div class="w-16 h-16 bg-brand-primary rounded-2xl flex items-center justify-center mx-auto mb-6 float-anim-delayed">
+                        <span class="iconify text-black text-2xl" data-icon="lucide:volume-2"></span>
+                    </div>
+                    <h3 class="font-bold mb-2">Voice Guidance is Critical</h3>
+                    <p class="text-zinc-500 text-sm">Audio prompts and read-aloud features dramatically reduce anxiety and error rates</p>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-8 border border-zinc-200 text-center animate-on-scroll delay-3 hover:shadow-float transition-all">
+                    <div class="w-16 h-16 bg-brand-primary rounded-2xl flex items-center justify-center mx-auto mb-6 float-anim">
+                        <span class="iconify text-black text-2xl" data-icon="lucide:list-checks"></span>
+                    </div>
+                    <h3 class="font-bold mb-2">Step-by-Step Flows</h3>
+                    <p class="text-zinc-500 text-sm">Breaking transactions into small, confirmed steps builds trust and prevents mistakes</p>
+                </div>
+            </div>
+            
+            <!-- Next Steps CTA -->
+            <div class="bg-black text-white rounded-2xl p-8 md:p-12 text-center animate-on-scroll delay-4">
+                <span class="milestone-badge bg-white/10 text-brand-primary border border-white/20 mb-6 inline-flex">
+                    <span class="iconify" data-icon="lucide:arrow-right"></span>
+                    Milestone 2 — What Comes Next
+                </span>
+                <p class="text-zinc-300 max-w-2xl mx-auto mb-6">With the problem clearly defined and user needs mapped, the next phase will move into design exploration.</p>
+                <div class="flex flex-wrap justify-center gap-4 text-sm">
+                    <span class="bg-white/10 px-4 py-2 rounded-lg">Apply Inclusive Design principles</span>
+                    <span class="bg-white/10 px-4 py-2 rounded-lg">Develop multiple concept directions</span>
+                    <span class="bg-white/10 px-4 py-2 rounded-lg">Prototype & test with elderly users</span>
+                </div>
+                <p class="text-brand-primary font-serif italic mt-8 text-lg">The goal is not a "special" app — but a better app that works for everyone.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== MILESTONE 2 DIVIDER ==================== -->
+    <section class="py-20 relative overflow-hidden" data-section="9" data-milestone="Milestone 2">
+        <div class="absolute inset-0 bg-black"></div>
+        <div class="absolute inset-0 grid-bg opacity-10"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-primary/10 rounded-full blur-3xl"></div>
+        <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+            <div class="animate-on-scroll">
+                <span class="milestone-badge bg-brand-primary text-black border border-brand-primary mb-8 inline-flex text-sm">
+                    <span class="iconify" data-icon="lucide:compass"></span>
+                    Milestone 2
+                </span>
+            </div>
+            <h2 class="font-serif text-3xl md:text-5xl font-semibold tracking-tight text-white mb-6 animate-on-scroll delay-1">
+                Design Development &<br>Concept Exploration
+            </h2>
+            <p class="text-zinc-400 text-lg max-w-2xl mx-auto animate-on-scroll delay-2">Translating research insights into design directions by exploring multiple concepts and evaluating their effectiveness.</p>
+            <div class="mt-8 flex items-center justify-center gap-2 text-brand-primary animate-on-scroll delay-3">
+                <span class="iconify" data-icon="lucide:arrow-down"></span>
+                <span class="text-sm font-medium">Scroll to explore</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 11: DESIGN OPPORTUNITIES ==================== -->
+    <section class="py-24 md:py-32" data-section="10" data-milestone="Milestone 2">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="milestone-badge bg-brand-primary/20 text-yellow-800 border border-yellow-200 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:target"></span>
+                    Design Goals
+                </span>
+                <h2 class="font-serif text-3xl md:text-4xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Design Opportunities Identified
+                </h2>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="flex items-center gap-4 bg-white rounded-xl p-5 border border-zinc-200 animate-on-scroll delay-1 hover:shadow-card transition-all">
+                    <div class="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                        <span class="iconify text-zinc-500" data-icon="lucide:arrow-right"></span>
+                    </div>
+                    <span class="text-zinc-500 font-medium">Reduce cognitive load</span>
+                    <span class="iconify text-brand-primary mx-2" data-icon="lucide:arrow-right"></span>
+                    <span class="font-semibold">Simplify interface</span>
+                </div>
+                
+                <div class="flex items-center gap-4 bg-white rounded-xl p-5 border border-zinc-200 animate-on-scroll delay-2 hover:shadow-card transition-all">
+                    <div class="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                        <span class="iconify text-zinc-500" data-icon="lucide:arrow-right"></span>
+                    </div>
+                    <span class="text-zinc-500 font-medium">Increase trust</span>
+                    <span class="iconify text-brand-primary mx-2" data-icon="lucide:arrow-right"></span>
+                    <span class="font-semibold">Clear confirmations & feedback</span>
+                </div>
+                
+                <div class="flex items-center gap-4 bg-white rounded-xl p-5 border border-zinc-200 animate-on-scroll delay-3 hover:shadow-card transition-all">
+                    <div class="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                        <span class="iconify text-zinc-500" data-icon="lucide:arrow-right"></span>
+                    </div>
+                    <span class="text-zinc-500 font-medium">Improve accessibility</span>
+                    <span class="iconify text-brand-primary mx-2" data-icon="lucide:arrow-right"></span>
+                    <span class="font-semibold">Larger UI, better contrast</span>
+                </div>
+                
+                <div class="flex items-center gap-4 bg-white rounded-xl p-5 border border-zinc-200 animate-on-scroll delay-4 hover:shadow-card transition-all">
+                    <div class="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                        <span class="iconify text-zinc-500" data-icon="lucide:arrow-right"></span>
+                    </div>
+                    <span class="text-zinc-500 font-medium">Enable independence</span>
+                    <span class="iconify text-brand-primary mx-2" data-icon="lucide:arrow-right"></span>
+                    <span class="font-semibold">Reduce need for external help</span>
+                </div>
+                
+                <div class="flex items-center gap-4 bg-white rounded-xl p-5 border border-zinc-200 animate-on-scroll delay-5 hover:shadow-card transition-all">
+                    <div class="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                        <span class="iconify text-zinc-500" data-icon="lucide:arrow-right"></span>
+                    </div>
+                    <span class="text-zinc-500 font-medium">Provide guidance</span>
+                    <span class="iconify text-brand-primary mx-2" data-icon="lucide:arrow-right"></span>
+                    <span class="font-semibold">Step-by-step interaction</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDES 12-16: CONCEPT EXPLORATION (TABBED) ==================== -->
+    <section class="py-24 md:py-32 bg-zinc-50 grid-bg" data-section="11" data-milestone="Milestone 2">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-12">
+                <span class="milestone-badge bg-zinc-100 text-zinc-600 border border-zinc-200 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:layout-grid"></span>
+                    Three Directions
+                </span>
+                <h2 class="font-serif text-3xl md:text-4xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Exploring Multiple Design Directions
+                </h2>
+                <p class="text-zinc-500 mt-4 animate-on-scroll delay-2">Instead of jumping to one solution, three distinct approaches were explored:</p>
+            </div>
+            
+            <!-- Concept Tabs -->
+            <div class="flex flex-wrap justify-center gap-3 mb-12 animate-on-scroll delay-2">
+                <button class="concept-tab active px-6 py-3 rounded-lg border-2 border-black font-semibold text-sm flex items-center gap-2" onclick="showConcept(0)">
+                    <span class="iconify" data-icon="lucide:minimize-2"></span>
+                    Simplified Mode
+                </button>
+                <button class="concept-tab px-6 py-3 rounded-lg border-2 border-black font-semibold text-sm flex items-center gap-2" onclick="showConcept(1)">
+                    <span class="iconify" data-icon="lucide:mic"></span>
+                    Voice Assistance
+                </button>
+                <button class="concept-tab px-6 py-3 rounded-lg border-2 border-black font-semibold text-sm flex items-center gap-2" onclick="showConcept(2)">
+                    <span class="iconify" data-icon="lucide:route"></span>
+                    Guided Flow
+                    <span class="bg-brand-primary text-black text-[10px] font-bold px-2 py-0.5 rounded-full">CORE</span>
+                </button>
+            </div>
+            
+            <!-- Concept Panels -->
+            <div id="conceptPanels">
+                <!-- Concept 1: Simplified Mode -->
+                <div class="concept-panel active" id="concept0">
+                    <div class="grid lg:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4">Simplified Interface Mode</h3>
+                            <p class="text-zinc-500 leading-relaxed mb-6">A minimal interface with only essential actions. Large buttons, fewer options, and reduced visual clutter create an uncluttered experience.</p>
+                            <div class="space-y-4">
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="iconify text-green-600" data-icon="lucide:check-circle"></span>
+                                        <span class="font-semibold text-green-800 text-sm">Strengths</span>
+                                    </div>
+                                    <p class="text-green-700 text-sm">Easy to understand • Low cognitive load</p>
+                                </div>
+                                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="iconify text-red-600" data-icon="lucide:x-circle"></span>
+                                        <span class="font-semibold text-red-800 text-sm">Limitations</span>
+                                    </div>
+                                    <p class="text-red-700 text-sm">May restrict advanced users • Feature limitations</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-center">
+                            <!-- Phone Mockup: Simple Mode -->
+                            <div class="phone-mockup shadow-2xl bg-zinc-50">
+                                <div class="pt-8 px-5 h-full flex flex-col">
+                                    <div class="text-center mt-4 mb-6">
+                                        <div class="w-12 h-12 bg-black rounded-xl flex items-center justify-center mx-auto mb-3">
+                                            <span class="iconify text-brand-primary text-xl" data-icon="lucide:landmark"></span>
+                                        </div>
+                                        <div class="font-bold text-sm">My Bank</div>
+                                    </div>
+                                    <div class="space-y-3 flex-1">
+                                        <div class="bg-black text-white rounded-xl p-4 text-center">
+                                            <span class="iconify text-brand-primary text-lg" data-icon="lucide:send"></span>
+                                            <div class="text-xs font-semibold mt-1">Send Money</div>
+                                        </div>
+                                        <div class="bg-white border-2 border-black rounded-xl p-4 text-center">
+                                            <span class="iconify text-lg" data-icon="lucide:qr-code"></span>
+                                            <div class="text-xs font-semibold mt-1">Scan QR</div>
+                                        </div>
+                                        <div class="bg-white border-2 border-black rounded-xl p-4 text-center">
+                                            <span class="iconify text-lg" data-icon="lucide:wallet"></span>
+                                            <div class="text-xs font-semibold mt-1">Check Balance</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Concept 2: Voice Assistance -->
+                <div class="concept-panel" id="concept1">
+                    <div class="grid lg:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4">Voice-Assisted Interaction</h3>
+                            <p class="text-zinc-500 leading-relaxed mb-6">Perform banking tasks through voice guidance. Audio prompts and command-based interaction reduce screen dependency for users who struggle with reading or navigation.</p>
+                            <div class="space-y-4">
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="iconify text-green-600" data-icon="lucide:check-circle"></span>
+                                        <span class="font-semibold text-green-800 text-sm">Strengths</span>
+                                    </div>
+                                    <p class="text-green-700 text-sm">Helps low literacy users • Reduces screen dependency</p>
+                                </div>
+                                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="iconify text-red-600" data-icon="lucide:x-circle"></span>
+                                        <span class="font-semibold text-red-800 text-sm">Limitations</span>
+                                    </div>
+                                    <p class="text-red-700 text-sm">Accuracy challenges • Language/accent barriers • Privacy concerns</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-center">
+                            <!-- Phone Mockup: Voice Mode -->
+                            <div class="phone-mockup shadow-2xl bg-zinc-900">
+                                <div class="pt-8 px-5 h-full flex flex-col items-center text-white">
+                                    <div class="mt-8 mb-6 text-center">
+                                        <span class="iconify text-zinc-500 text-sm" data-icon="lucide:landmark"></span>
+                                        <div class="text-zinc-400 text-xs mt-1">Voice Banking</div>
+                                    </div>
+                                    <div class="w-20 h-20 rounded-full bg-brand-primary flex items-center justify-center mb-6 shadow-glow" style="animation: pulse-slow 2s infinite">
+                                        <span class="iconify text-black text-3xl" data-icon="lucide:mic"></span>
+                                    </div>
+                                    <p class="text-sm text-center text-zinc-300 mb-2">"Send ₹500 to Priya"</p>
+                                    <div class="bg-white/10 rounded-lg px-4 py-2 text-xs text-zinc-400 text-center">
+                                        Listening...
+                                    </div>
+                                    <div class="mt-8 space-y-2 w-full">
+                                        <div class="bg-white/5 rounded-lg p-3 text-xs text-zinc-400 text-left">
+                                            <span class="text-brand-primary">You:</span> "Send money to Priya"
+                                        </div>
+                                        <div class="bg-white/5 rounded-lg p-3 text-xs text-zinc-400 text-left">
+                                            <span class="text-green-400">Bot:</span> "How much should I send?"
+                                        </div>
+                                        <div class="bg-white/5 rounded-lg p-3 text-xs text-zinc-400 text-left">
+                                            <span class="text-brand-primary">You:</span> "500 rupees"
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Concept 3: Guided Flow (CORE) -->
+                <div class="concept-panel" id="concept2">
+                    <div class="grid lg:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <div class="flex items-center gap-2 mb-4">
+                                <h3 class="text-2xl font-bold">Guided Transaction Flow</h3>
+                                <span class="bg-brand-primary text-black text-xs font-bold px-2 py-1 rounded-full">SELECTED</span>
+                            </div>
+                            <p class="text-zinc-500 leading-relaxed mb-6">Step-by-step transaction process with one action per screen, progress indicators, and confirmation before execution. Reduces anxiety, prevents errors, and builds user confidence.</p>
+                            <div class="space-y-4">
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="iconify text-green-600" data-icon="lucide:check-circle"></span>
+                                        <span class="font-semibold text-green-800 text-sm">Strengths</span>
+                                    </div>
+                                    <p class="text-green-700 text-sm">Reduces anxiety • Prevents errors • Builds user confidence</p>
+                                </div>
+                                <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="iconify text-amber-600" data-icon="lucide:alert-circle"></span>
+                                        <span class="font-semibold text-amber-800 text-sm">Trade-off</span>
+                                    </div>
+                                    <p class="text-amber-700 text-sm">Slightly slower interaction — but significantly more accurate</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-center">
+                            <!-- Phone Mockup: Guided Flow - 3 steps -->
+                            <div class="flex gap-4 items-center">
+                                <div class="phone-mockup shadow-2xl bg-white flex-shrink-0" style="width: 160px; height: 320px;">
+                                    <div class="pt-6 px-3 h-full flex flex-col">
+                                        <div class="text-[8px] text-zinc-400 mb-2">Step 1 of 3</div>
+                                        <div class="w-full h-1 bg-zinc-100 rounded-full mb-4"><div class="h-1 bg-brand-primary rounded-full" style="width:33%"></div></div>
+                                        <div class="text-[10px] font-bold mb-3">Who to send to?</div>
+                                        <div class="bg-zinc-50 rounded-lg p-2 mb-2 border-2 border-black">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center"><span class="text-[8px]">P</span></div>
+                                                <div>
+                                                    <div class="text-[9px] font-bold">Priya Sharma</div>
+                                                    <div class="text-[7px] text-zinc-400">****1234</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="bg-zinc-50 rounded-lg p-2 border border-zinc-200">
+                                            <div class="text-[9px] text-zinc-400">+ Add new contact</div>
+                                        </div>
+                                        <div class="mt-auto mb-4 bg-black text-white rounded-lg p-2 text-center text-[9px] font-semibold">Continue</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="phone-mockup shadow-2xl bg-white flex-shrink-0" style="width: 160px; height: 320px;">
+                                    <div class="pt-6 px-3 h-full flex flex-col">
+                                        <div class="text-[8px] text-zinc-400 mb-2">Step 2 of 3</div>
+                                        <div class="w-full h-1 bg-zinc-100 rounded-full mb-4"><div class="h-1 bg-brand-primary rounded-full" style="width:66%"></div></div>
+                                        <div class="text-[10px] font-bold mb-3">Enter amount</div>
+                                        <div class="text-center mb-4">
+                                            <div class="text-3xl font-bold">₹500</div>
+                                        </div>
+                                        <div class="grid grid-cols-3 gap-1">
+                                            <div class="bg-zinc-50 rounded p-1.5 text-center text-[9px] border border-zinc-200">100</div>
+                                            <div class="bg-zinc-50 rounded p-1.5 text-center text-[9px] border border-zinc-200">500</div>
+                                            <div class="bg-brand-primary/20 rounded p-1.5 text-center text-[9px] border-2 border-brand-primary font-bold">1000</div>
+                                        </div>
+                                        <div class="mt-auto mb-4 bg-black text-white rounded-lg p-2 text-center text-[9px] font-semibold">Continue</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="phone-mockup shadow-2xl bg-white flex-shrink-0 hidden sm:block" style="width: 160px; height: 320px;">
+                                    <div class="pt-6 px-3 h-full flex flex-col">
+                                        <div class="text-[8px] text-zinc-400 mb-2">Step 3 of 3</div>
+                                        <div class="w-full h-1 bg-zinc-100 rounded-full mb-4"><div class="h-1 bg-brand-primary rounded-full" style="width:100%"></div></div>
+                                        <div class="text-[10px] font-bold mb-3 text-center">Confirm Payment</div>
+                                        <div class="bg-zinc-50 rounded-lg p-3 mb-3 text-center">
+                                            <div class="text-[8px] text-zinc-400">To</div>
+                                            <div class="text-[10px] font-bold">Priya Sharma</div>
+                                            <div class="text-[8px] text-zinc-400 mt-2">Amount</div>
+                                            <div class="text-lg font-bold text-green-600">₹500</div>
+                                        </div>
+                                        <div class="bg-red-50 border border-red-200 rounded-lg p-2 text-center text-[7px] text-red-600 mb-2">
+                                            ⚠️ This action cannot be undone
+                                        </div>
+                                        <div class="mt-auto mb-4 bg-green-600 text-white rounded-lg p-2 text-center text-[9px] font-semibold">✓ Confirm & Send</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 16: CONCEPT COMPARISON ==================== -->
+    <section class="py-24 md:py-32" data-section="12" data-milestone="Milestone 2">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-12">
+                <span class="milestone-badge bg-zinc-100 text-zinc-600 border border-zinc-200 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:scale"></span>
+                    Evaluation
+                </span>
+                <h2 class="font-serif text-3xl md:text-4xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Concept Comparison
+                </h2>
+            </div>
+            
+            <div class="bg-white border-2 border-black rounded-2xl overflow-hidden shadow-hard animate-on-scroll delay-2">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-black text-white">
+                            <th class="px-6 py-4 text-left text-sm font-semibold">Concept</th>
+                            <th class="px-6 py-4 text-center text-sm font-semibold">Ease of Use</th>
+                            <th class="px-6 py-4 text-center text-sm font-semibold">Safety</th>
+                            <th class="px-6 py-4 text-center text-sm font-semibold">Scalability</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-zinc-100">
+                            <td class="px-6 py-5 font-medium text-sm">Simplified Mode</td>
+                            <td class="px-6 py-5 text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-zinc-200"></div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-zinc-200"></div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-zinc-200"></div>
+                                    <div class="w-3 h-3 rounded-full bg-zinc-200"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="border-b border-zinc-100">
+                            <td class="px-6 py-5 font-medium text-sm">Voice Assist</td>
+                            <td class="px-6 py-5 text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-zinc-200"></div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-zinc-200"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="bg-brand-primary/5">
+                            <td class="px-6 py-5 font-bold text-sm flex items-center gap-2">
+                                Guided Flow
+                                <span class="bg-brand-primary text-black text-[9px] font-bold px-1.5 py-0.5 rounded">BEST</span>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-5 text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                    <div class="w-3 h-3 rounded-full bg-brand-primary"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Selected Direction -->
+            <div class="mt-8 bg-black text-white rounded-2xl p-8 animate-on-scroll delay-3">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 bg-brand-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                        <span class="iconify text-black text-xl" data-icon="lucide:check"></span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg mb-2">Selected Design Direction: Guided Transaction Flow</h3>
+                        <p class="text-zinc-400 text-sm mb-3">Addresses maximum pain points • Reduces error risk significantly • Works across multiple user groups • Balances simplicity + functionality</p>
+                        <p class="text-brand-primary text-xs font-medium italic">This justification is crucial — guided flow is the most comprehensive solution.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 18: DESIGN PRINCIPLES ==================== -->
+    <section class="py-24 md:py-32 bg-zinc-50" data-section="13" data-milestone="Milestone 2">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="milestone-badge bg-zinc-100 text-zinc-600 border border-zinc-200 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:puzzle"></span>
+                    Foundation
+                </span>
+                <h2 class="font-serif text-3xl md:text-4xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Inclusive Design Principles
+                </h2>
+            </div>
+            
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white border-2 border-black rounded-xl p-6 shadow-hard hover:-translate-y-1 transition-all animate-on-scroll delay-1">
+                    <span class="iconify text-brand-primary text-2xl mb-4" data-icon="lucide:eye-off"></span>
+                    <h3 class="font-bold text-sm mb-2">Progressive Disclosure</h3>
+                    <p class="text-zinc-500 text-xs">Show only necessary information at each step</p>
+                </div>
+                
+                <div class="bg-white border-2 border-black rounded-xl p-6 shadow-hard hover:-translate-y-1 transition-all animate-on-scroll delay-2">
+                    <span class="iconify text-brand-primary text-2xl mb-4" data-icon="lucide:layers"></span>
+                    <h3 class="font-bold text-sm mb-2">Multimodal Interaction</h3>
+                    <p class="text-zinc-500 text-xs">Combine text, icons, and audio together</p>
+                </div>
+                
+                <div class="bg-white border-2 border-black rounded-xl p-6 shadow-hard hover:-translate-y-1 transition-all animate-on-scroll delay-3">
+                    <span class="iconify text-brand-primary text-2xl mb-4" data-icon="lucide:maximize"></span>
+                    <h3 class="font-bold text-sm mb-2">Design for the Edges</h3>
+                    <p class="text-zinc-500 text-xs">Start with elderly users — benefits cascade outward</p>
+                </div>
+                
+                <div class="bg-white border-2 border-black rounded-xl p-6 shadow-hard hover:-translate-y-1 transition-all animate-on-scroll delay-4">
+                    <span class="iconify text-brand-primary text-2xl mb-4" data-icon="lucide:shield-check"></span>
+                    <h3 class="font-bold text-sm mb-2">Error Prevention</h3>
+                    <p class="text-zinc-500 text-xs">Confirm before action — never allow irreversible mistakes</p>
+                </div>
+            </div>
+            
+            <!-- Standards -->
+            <div class="mt-16 grid md:grid-cols-2 gap-8 animate-on-scroll delay-5">
+                <div class="bg-white rounded-2xl p-8 border border-zinc-200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <span class="iconify text-blue-600" data-icon="lucide:file-check"></span>
+                        </div>
+                        <h3 class="font-bold">ISO 9241 (Usability)</h3>
+                    </div>
+                    <ul class="space-y-2 text-sm text-zinc-500">
+                        <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full bg-blue-400"></span> Clarity of interface elements</li>
+                        <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full bg-blue-400"></span> Efficiency of task completion</li>
+                        <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full bg-blue-400"></span> Error tolerance and recovery</li>
+                    </ul>
+                </div>
+                <div class="bg-white rounded-2xl p-8 border border-zinc-200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <span class="iconify text-green-600" data-icon="lucide:accessibility"></span>
+                        </div>
+                        <h3 class="font-bold">WCAG Guidelines</h3>
+                    </div>
+                    <ul class="space-y-2 text-sm text-zinc-500">
+                        <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full bg-green-400"></span> Text readability (minimum 16px body)</li>
+                        <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full bg-green-400"></span> Color contrast ratios (4.5:1 minimum)</li>
+                        <li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full bg-green-400"></span> Accessible navigation patterns</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== MILESTONE 3 DIVIDER ==================== -->
+    <section class="py-20 relative overflow-hidden" data-section="14" data-milestone="Milestone 3">
+        <div class="absolute inset-0 bg-gradient-to-br from-zinc-900 to-black"></div>
+        <div class="absolute inset-0 grid-bg opacity-10"></div>
+        <div class="absolute top-1/2 left-1/4 w-[400px] h-[400px] bg-brand-primary/15 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-1/4 w-[300px] h-[300px] bg-brand-primary/10 rounded-full blur-3xl"></div>
+        <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+            <div class="animate-on-scroll">
+                <span class="milestone-badge bg-brand-primary text-black border border-brand-primary mb-8 inline-flex text-sm">
+                    <span class="iconify" data-icon="lucide:rocket"></span>
+                    Milestone 3
+                </span>
+            </div>
+            <h2 class="font-serif text-3xl md:text-5xl font-semibold tracking-tight text-white mb-6 animate-on-scroll delay-1">
+                Final Design Proposal
+            </h2>
+            <p class="text-zinc-400 text-lg max-w-2xl mx-auto animate-on-scroll delay-2">An Inclusive Guided Banking Experience — the culmination of research, exploration, and design principles.</p>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 20-21: FINAL SOLUTION ==================== -->
+    <section class="py-24 md:py-32" data-section="15" data-milestone="Milestone 3" id="slide20">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="milestone-badge bg-brand-primary/20 text-yellow-800 border border-yellow-200 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:sparkles"></span>
+                    The Solution
+                </span>
+                <h2 class="font-serif text-3xl md:text-5xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Inclusive Guided Banking
+                </h2>
+                <p class="text-zinc-500 mt-4 max-w-xl mx-auto animate-on-scroll delay-2">Step-by-step transaction system with large, readable interface and clear confirmations.</p>
+            </div>
+            
+            <!-- Final Flow Visualization -->
+            <div class="bg-white border-2 border-black rounded-2xl p-8 md:p-12 shadow-hard-lg mb-16 animate-on-scroll delay-2">
+                <h3 class="text-center font-bold text-sm uppercase tracking-wider text-zinc-400 mb-10">Transaction Flow</h3>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6">
+                    <!-- Step 1 -->
+                    <div class="bg-zinc-50 border-2 border-black rounded-xl p-6 text-center w-full md:w-48 shadow-hard hover:-translate-y-1 transition-all">
+                        <div class="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center mx-auto mb-3 text-black font-bold">1</div>
+                        <span class="iconify text-2xl text-zinc-400 mb-2" data-icon="lucide:user-plus"></span>
+                        <div class="font-bold text-sm">Select Recipient</div>
+                        <div class="text-zinc-400 text-[10px] mt-1">Choose from contacts</div>
+                    </div>
+                    
+                    <span class="iconify text-zinc-300 text-2xl rotate-90 md:rotate-0" data-icon="lucide:arrow-right"></span>
+                    
+                    <!-- Step 2 -->
+                    <div class="bg-zinc-50 border-2 border-black rounded-xl p-6 text-center w-full md:w-48 shadow-hard hover:-translate-y-1 transition-all">
+                        <div class="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center mx-auto mb-3 text-black font-bold">2</div>
+                        <span class="iconify text-2xl text-zinc-400 mb-2" data-icon="lucide:indian-rupee"></span>
+                        <div class="font-bold text-sm">Enter Amount</div>
+                        <div class="text-zinc-400 text-[10px] mt-1">With quick-select options</div>
+                    </div>
+                    
+                    <span class="iconify text-zinc-300 text-2xl rotate-90 md:rotate-0" data-icon="lucide:arrow-right"></span>
+                    
+                    <!-- Step 3 -->
+                    <div class="bg-zinc-50 border-2 border-black rounded-xl p-6 text-center w-full md:w-48 shadow-hard hover:-translate-y-1 transition-all">
+                        <div class="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center mx-auto mb-3 text-black font-bold">3</div>
+                        <span class="iconify text-2xl text-zinc-400 mb-2" data-icon="lucide:shield-check"></span>
+                        <div class="font-bold text-sm">Confirm Details</div>
+                        <div class="text-zinc-400 text-[10px] mt-1">Review before sending</div>
+                    </div>
+                    
+                    <span class="iconify text-zinc-300 text-2xl rotate-90 md:rotate-0" data-icon="lucide:arrow-right"></span>
+                    
+                    <!-- Step 4 -->
+                    <div class="bg-green-50 border-2 border-green-500 rounded-xl p-6 text-center w-full md:w-48 hover:-translate-y-1 transition-all">
+                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3 text-white font-bold">✓</div>
+                        <span class="iconify text-2xl text-green-500 mb-2" data-icon="lucide:check-circle"></span>
+                        <div class="font-bold text-sm text-green-800">Success!</div>
+                        <div class="text-green-600 text-[10px] mt-1">Money sent safely</div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 flex flex-wrap justify-center gap-4 text-xs text-zinc-400">
+                    <span class="flex items-center gap-1"><span class="iconify text-brand-primary" data-icon="lucide:check"></span> Linear, predictable flow</span>
+                    <span class="flex items-center gap-1"><span class="iconify text-brand-primary" data-icon="lucide:check"></span> No cognitive overload</span>
+                    <span class="flex items-center gap-1"><span class="iconify text-brand-primary" data-icon="lucide:check"></span> Clear at every step</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 22: KEY FEATURES ==================== -->
+    <section class="py-24 md:py-32 bg-zinc-900 text-white" data-section="16" data-milestone="Milestone 3">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="milestone-badge bg-white/10 text-brand-primary border border-white/20 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:settings-2"></span>
+                    Features
+                </span>
+                <h2 class="font-serif text-3xl md:text-4xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Key Design Features
+                </h2>
+            </div>
+            
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all animate-on-scroll delay-1">
+                    <div class="w-12 h-12 bg-brand-primary/20 rounded-xl flex items-center justify-center mb-4">
+                        <span class="iconify text-brand-primary text-xl" data-icon="lucide:scaling"></span>
+                    </div>
+                    <h3 class="font-bold mb-2">Large Buttons & Typography</h3>
+                    <p class="text-zinc-400 text-sm">Minimum 16px body text, 48px tap targets — designed for ageing eyes and imprecise touch</p>
+                </div>
+                
+                <div class="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all animate-on-scroll delay-2">
+                    <div class="w-12 h-12 bg-brand-primary/20 rounded-xl flex items-center justify-center mb-4">
+                        <span class="iconify text-brand-primary text-xl" data-icon="lucide:message-circle"></span>
+                    </div>
+                    <h3 class="font-bold mb-2">Clear Step Instructions</h3>
+                    <p class="text-zinc-400 text-sm">Every screen tells the user exactly what to do in plain, simple language</p>
+                </div>
+                
+                <div class="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all animate-on-scroll delay-3">
+                    <div class="w-12 h-12 bg-brand-primary/20 rounded-xl flex items-center justify-center mb-4">
+                        <span class="iconify text-brand-primary text-xl" data-icon="lucide:shield-alert"></span>
+                    </div>
+                    <h3 class="font-bold mb-2">Error Prevention Prompts</h3>
+                    <p class="text-zinc-400 text-sm">Warnings before irreversible actions — catching mistakes before they happen</p>
+                </div>
+                
+                <div class="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all animate-on-scroll delay-2">
+                    <div class="w-12 h-12 bg-brand-primary/20 rounded-xl flex items-center justify-center mb-4">
+                        <span class="iconify text-brand-primary text-xl" data-icon="lucide:check-square"></span>
+                    </div>
+                    <h3 class="font-bold mb-2">Confirmation Screen</h3>
+                    <p class="text-zinc-400 text-sm">Full summary before payment execution — name, amount, method — all clearly displayed</p>
+                </div>
+                
+                <div class="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all animate-on-scroll delay-3">
+                    <div class="w-12 h-12 bg-brand-primary/20 rounded-xl flex items-center justify-center mb-4">
+                        <span class="iconify text-brand-primary text-xl" data-icon="lucide:volume-2"></span>
+                    </div>
+                    <h3 class="font-bold mb-2">Optional Voice Feedback</h3>
+                    <p class="text-zinc-400 text-sm">Audio read-aloud of amounts, names, and instructions — always optional, always available</p>
+                </div>
+                
+                <div class="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all animate-on-scroll delay-4">
+                    <div class="w-12 h-12 bg-brand-primary/20 rounded-xl flex items-center justify-center mb-4">
+                        <span class="iconify text-brand-primary text-xl" data-icon="lucide:bar-chart-3"></span>
+                    </div>
+                    <h3 class="font-bold mb-2">Progress Indicators</h3>
+                    <p class="text-zinc-400 text-sm">"Step 2 of 3" — users always know where they are and how much is left</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 23: INCLUSIVITY IMPACT ==================== -->
+    <section class="py-24 md:py-32" data-section="17" data-milestone="Milestone 3">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="milestone-badge bg-green-50 text-green-700 border border-green-200 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:heart-handshake"></span>
+                    Impact
+                </span>
+                <h2 class="font-serif text-3xl md:text-4xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Inclusivity Impact
+                </h2>
+            </div>
+            
+            <div class="grid sm:grid-cols-2 gap-6">
+                <div class="flex items-start gap-4 bg-white rounded-2xl p-6 border border-zinc-200 animate-on-scroll delay-1 hover:shadow-float transition-all">
+                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <span class="iconify text-purple-600 text-xl" data-icon="lucide:user-check"></span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold mb-1">Elderly Users</h3>
+                        <p class="text-zinc-500 text-sm">→ Independence from family members for basic transactions</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-4 bg-white rounded-2xl p-6 border border-zinc-200 animate-on-scroll delay-2 hover:shadow-float transition-all">
+                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <span class="iconify text-green-600 text-xl" data-icon="lucide:trees"></span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold mb-1">Rural Users</h3>
+                        <p class="text-zinc-500 text-sm">→ Easier onboarding, less intimidating first experience</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-4 bg-white rounded-2xl p-6 border border-zinc-200 animate-on-scroll delay-3 hover:shadow-float transition-all">
+                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <span class="iconify text-blue-600 text-xl" data-icon="lucide:graduation-cap"></span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold mb-1">First-Time Users</h3>
+                        <p class="text-zinc-500 text-sm">→ Better learning curve with guided, step-by-step interaction</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-4 bg-white rounded-2xl p-6 border border-zinc-200 animate-on-scroll delay-4 hover:shadow-float transition-all">
+                    <div class="w-12 h-12 bg-brand-primary/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <span class="iconify text-brand-primaryDark text-xl" data-icon="lucide:users"></span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold mb-1">All Users</h3>
+                        <p class="text-zinc-500 text-sm">→ Reduced errors, fewer support calls, better overall experience</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 24: NON-NEGOTIABLES ==================== -->
+    <section class="py-24 md:py-32 bg-brand-gray grid-bg" data-section="18" data-milestone="Milestone 3">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="milestone-badge bg-red-50 text-red-700 border border-red-200 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:shield-alert"></span>
+                    Non-Negotiables
+                </span>
+                <h2 class="font-serif text-3xl md:text-4xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Requirements Addressed
+                </h2>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="bg-white border-2 border-black rounded-2xl p-8 shadow-hard animate-on-scroll delay-1">
+                    <div class="flex items-start gap-5">
+                        <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <span class="iconify text-green-600 text-2xl" data-icon="lucide:accessibility"></span>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">Accessibility</h3>
+                            <p class="text-zinc-500 text-sm leading-relaxed">Large touch targets (48px minimum), high-contrast text (WCAG AA), readable typography (16px+ body), multimodal output (text + voice), and support for screen readers.</p>
+                        </div>
+                        <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full flex-shrink-0">✓ ADDRESSED</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white border-2 border-black rounded-2xl p-8 shadow-hard animate-on-scroll delay-2">
+                    <div class="flex items-start gap-5">
+                        <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <span class="iconify text-blue-600 text-2xl" data-icon="lucide:eye"></span>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">Clarity</h3>
+                            <p class="text-zinc-500 text-sm leading-relaxed">One action per screen, plain-language instructions (no jargon), clear visual hierarchy, progress indicators showing position in flow, and consistent component patterns throughout.</p>
+                        </div>
+                        <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full flex-shrink-0">✓ ADDRESSED</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white border-2 border-black rounded-2xl p-8 shadow-hard animate-on-scroll delay-3">
+                    <div class="flex items-start gap-5">
+                        <div class="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <span class="iconify text-amber-600 text-2xl" data-icon="lucide:shield-check"></span>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">Error Prevention</h3>
+                            <p class="text-zinc-500 text-sm leading-relaxed">Confirmation screen before every transaction, warning prompts for irreversible actions, input validation with clear feedback, and ability to go back at any step without losing data.</p>
+                        </div>
+                        <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full flex-shrink-0">✓ ADDRESSED</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 25: REFLECTION ==================== -->
+    <section class="py-24 md:py-32" data-section="19" data-milestone="Milestone 3">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-12">
+                <span class="milestone-badge bg-zinc-100 text-zinc-600 border border-zinc-200 mb-6 animate-on-scroll">
+                    <span class="iconify" data-icon="lucide:brain"></span>
+                    Reflection
+                </span>
+                <h2 class="font-serif text-3xl md:text-4xl font-semibold tracking-tight animate-on-scroll delay-1">
+                    Personal Learnings
+                </h2>
+            </div>
+            
+            <div class="space-y-8">
+                <div class="bg-white rounded-2xl p-8 border border-zinc-200 animate-on-scroll delay-1">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                            <span class="iconify text-red-500" data-icon="lucide:alert-triangle"></span>
+                        </div>
+                        <h3 class="font-bold">Biggest Challenge</h3>
+                    </div>
+                    <p class="text-zinc-500 leading-relaxed pl-13">Understanding real user struggles beyond assumptions. It's easy to think "just make the font bigger" — but the real challenge is understanding the <strong class="text-zinc-700">cumulative anxiety</strong> that builds when every single interaction feels uncertain. Each small confusion compounds into a complete refusal to try.</p>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-8 border border-zinc-200 animate-on-scroll delay-2">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                            <span class="iconify text-blue-500" data-icon="lucide:arrow-up-circle"></span>
+                        </div>
+                        <h3 class="font-bold">What I'd Improve</h3>
+                    </div>
+                    <p class="text-zinc-500 leading-relaxed pl-13">User testing with real elderly users. Research and heuristic analysis can only go so far — <strong class="text-zinc-700">watching an actual 65-year-old try to complete a transaction</strong> would reveal blind spots that no amount of theory can predict. This is the critical next step for validation.</p>
+                </div>
+                
+                <div class="bg-black text-white rounded-2xl p-8 border-2 border-black shadow-hard-lg animate-on-scroll delay-3">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-brand-primary rounded-lg flex items-center justify-center">
+                            <span class="iconify text-black" data-icon="lucide:lightbulb"></span>
+                        </div>
+                        <h3 class="font-bold">Key Learning</h3>
+                    </div>
+                    <p class="text-zinc-300 text-lg font-serif italic leading-relaxed">
+                        Inclusive design is not adding features — it's removing barriers.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SLIDE 26: CLOSING ==================== -->
+    <section class="py-24 md:py-32 bg-zinc-900 text-white relative overflow-hidden" data-section="20" data-milestone="Closing">
+        <div class="absolute inset-0 grid-bg opacity-10"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-primary/5 rounded-full blur-3xl"></div>
+        
+        <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+            <div class="animate-on-scroll">
+                <div class="w-20 h-20 bg-brand-primary rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-glow float-anim">
+                    <span class="iconify text-black text-4xl" data-icon="lucide:heart"></span>
+                </div>
+            </div>
+            
+            <blockquote class="font-serif text-2xl md:text-4xl font-semibold tracking-tight leading-snug mb-8 animate-on-scroll delay-1">
+                "This is not a special design for elderly users —<br>
+                <span class="text-brand-primary">it is a better design for everyone.</span>"
+            </blockquote>
+            
+            <div class="w-16 h-0.5 bg-zinc-700 mx-auto mb-8 animate-on-scroll delay-2"></div>
+            
+            <div class="flex flex-wrap justify-center gap-8 text-sm text-zinc-400 animate-on-scroll delay-3">
+                <div class="flex items-center gap-2">
+                    <span class="iconify" data-icon="lucide:user"></span>
+                    <span>Ayush Narula</span>
+                </div>
+                <div class="w-px h-4 bg-zinc-700"></div>
+                <div class="flex items-center gap-2">
+                    <span class="iconify" data-icon="lucide:hash"></span>
+                    <span>500119444</span>
+                </div>
+                <div class="w-px h-4 bg-zinc-700"></div>
+                <div class="flex items-center gap-2">
+                    <span class="iconify" data-icon="lucide:graduation-cap"></span>
+                    <span>B.Tech CSE</span>
+                </div>
+            </div>
+            
+            <div class="mt-12 flex flex-wrap justify-center gap-3 animate-on-scroll delay-4">
+                <span class="milestone-badge bg-white/5 text-zinc-500 border border-white/10">
+                    Milestone 1 ✓
+                </span>
+                <span class="milestone-badge bg-white/5 text-zinc-500 border border-white/10">
+                    Milestone 2 ✓
+                </span>
+                <span class="milestone-badge bg-white/5 text-zinc-500 border border-white/10">
+                    Milestone 3 ✓
+                </span>
+            </div>
+            
+            <button onclick="window.scrollTo({top:0,behavior:'smooth'})" class="mt-12 bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg text-sm font-medium transition-all flex items-center gap-2 mx-auto animate-on-scroll delay-5">
+                <span class="iconify" data-icon="lucide:arrow-up"></span>
+                Back to top
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-6 bg-black text-zinc-600 text-center text-xs">
+        <p>Inclusive Redesign of Banking Mobile Apps — Academic Project Presentation</p>
+    </footer>
+
+    <script>
+        // ============ SCROLL ANIMATIONS ============
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+        // ============ PROGRESS BAR ============
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrollTop / docHeight) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        });
+
+        // ============ SIDE NAVIGATION ============
+        const sections = document.querySelectorAll('[data-section]');
+        const sideNav = document.getElementById('sideNav');
+
+        sections.forEach((section, index) => {
+            const dot = document.createElement('button');
+            dot.className = 'slide-nav-dot';
+            dot.title = `Section ${index + 1}`;
+            dot.addEventListener('click', () => {
+                section.scrollIntoView({ behavior: 'smooth' });
+            });
+            sideNav.appendChild(dot);
+        });
+
+        const navDots = sideNav.querySelectorAll('.slide-nav-dot');
+        const milestoneEl = document.getElementById('currentMilestone');
+
+        const sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const idx = parseInt(entry.target.dataset.section);
+                    navDots.forEach((d, i) => {
+                        d.classList.toggle('active', i === idx);
+                    });
+                    const milestone = entry.target.dataset.milestone;
+                    if (milestone) {
+                        milestoneEl.textContent = milestone;
+                    }
+                }
+            });
+        }, { threshold: 0.3 });
+
+        sections.forEach(section => sectionObserver.observe(section));
+
+        // ============ CONCEPT TABS ============
+        function showConcept(index) {
+            // Update tabs
+            document.querySelectorAll('.concept-tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            // Update panels
+            document.querySelectorAll('.concept-panel').forEach((panel, i) => {
+                panel.classList.toggle('active', i === index);
+            });
+        }
+
+        // ============ TOP NAV BACKGROUND ============
+        const topNav = document.getElementById('topNav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                topNav.classList.add('shadow-sm');
+            } else {
+                topNav.classList.remove('shadow-sm');
+            }
+        });
+    </script>
+</body>
+</html>
